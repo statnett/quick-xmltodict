@@ -1,0 +1,12 @@
+[package]
+name = "quick-xmltodict"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "quick_xmltodict"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = "*"
+quick-xml = "*"
