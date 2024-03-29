@@ -8,5 +8,6 @@ name = "quick_xmltodict"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = "*"
+anyhow = "*"
+pyo3 = { version = "*", features = ["anyhow"] }
 quick-xml = "*"

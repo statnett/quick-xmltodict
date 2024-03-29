@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from xml.parsers.expat import ExpatError
 
 import pytest
 from quick_xmltodict import parse as rustparse
@@ -90,6 +91,15 @@ def test_namespace_prefixed(parse):
     assert parse(xml) == target
 
 
+def test_namespace_prefixed_attr(parse):
+    xml = """
+        <a xmlns:ns="http://example.com">
+            <ns:b ns:name="value">text</ns:b>
+        </a>"""
+    target = {"a": {"@xmlns:ns": "http://example.com", "ns:b": {"@ns:name": "value", "#text": "text"}}}
+    assert parse(xml) == target
+
+
 @pytest.fixture
 def data_dir():
     return Path(__file__).parent / "data"
@@ -107,3 +117,18 @@ def forecast_target(data_dir):
 
 def test_forecast(parse, forecast_xml, forecast_target):
     assert parse(forecast_xml) == forecast_target
+
+
+def test_error_missing_closing_tag(parse):
+    with pytest.raises((RuntimeError, ExpatError)):
+        parse("<a>")
+
+
+def test_error_missing_opening_tag(parse):
+    with pytest.raises((RuntimeError, ExpatError)):
+        parse("</a>")
+
+
+def test_error_malformed_tag(parse):
+    with pytest.raises((RuntimeError, ExpatError)):
+        parse("<a")
