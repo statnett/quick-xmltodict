@@ -1,9 +1,12 @@
 use anyhow::Result;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList, PyNone};
-use quick_xml::events::Event;
+use pyo3::types::PyNone;
+
 use quick_xml::name::QName;
-use quick_xml::reader::Reader;
+
+use quick_xml::events::Event;
+use quick_xml::Reader;
+use std::collections::HashMap;
 
 trait QNameExt {
     fn qn(&self) -> Result<String>;
@@ -20,116 +23,117 @@ impl QNameExt for QName<'_> {
     }
 }
 
+type JsonMapping = HashMap<String, Value>;
+
 #[derive(Debug)]
-enum Value<'py> {
+enum Value {
     None,
     Text(String),
-    Dict(&'py PyDict),
+    Mapping(JsonMapping),
+    List(Vec<Value>),
 }
 
-impl ToPyObject for Value<'_> {
+impl ToPyObject for Value {
     fn to_object(&self, py: Python) -> PyObject {
         match self {
-            Value::None => PyNone::get(py).into(),
+            Value::None => PyNone::get_bound(py).to_object(py),
             Value::Text(s) => s.to_object(py),
-            Value::Dict(d) => d.to_object(py),
+            Value::Mapping(m) => m.to_object(py),
+            Value::List(l) => l.to_object(py),
         }
     }
 }
 
-fn _update_dict<'a>(py: Python<'a>, d: &'a PyDict, tag_name: &str, value: &'a PyObject) -> Result<()> {
-    match d.get_item(tag_name)? {
-        None => {
-            d.set_item(tag_name, value)?;
+fn update_mapping(mapping: &mut HashMap<String, Value>, tag_name: String, value: Value) -> Result<()> {
+    match mapping.entry(tag_name) {
+        std::collections::hash_map::Entry::Vacant(e) => {
+            e.insert(value);
         }
-        Some(existing_val) => {
-            let list: &PyList;
-            if existing_val.is_instance_of::<PyList>() {
-                list = existing_val.extract::<&PyList>()?;
-            } else {
-                list = PyList::new(py, vec![existing_val]);
+        std::collections::hash_map::Entry::Occupied(mut e) => match e.get_mut() {
+            Value::List(l) => l.push(value),
+            _ => {
+                let old_value = std::mem::replace(e.get_mut(), Value::List(vec![]));
+                if let Value::List(l) = e.into_mut() {
+                    l.push(old_value);
+                    l.push(value);
+                }
             }
-
-            list.append(value)?;
-            d.set_item(tag_name, list)?;
-        }
+        },
     }
     Ok(())
 }
 
-fn _parse<'a>(py: Python<'a>, xml: &'a str) -> Result<&'a PyDict> {
+fn _parse<'a>(py: Python<'a>, xml: &'a str) -> Result<JsonMapping> {
     let mut reader = Reader::from_str(xml);
     reader.trim_text(true);
 
-    let d = PyDict::new(py);
+    let mut mapping: JsonMapping = HashMap::new();
     loop {
         match reader.read_event() {
             Err(e) => return Err(e.into()),
             Ok(Event::Eof) => break,
             Ok(Event::Empty(e)) => {
-                let tag_name = e.name().qn()?;
-
                 let value: Value;
                 if e.attributes().count() == 0 {
                     value = Value::None;
                 } else {
-                    let attrs = PyDict::new(py);
+                    let mut attrs: JsonMapping = HashMap::new();
                     for attr in e.attributes() {
                         let attr = attr?;
-                        attrs.set_item(format!("@{}", attr.key.qn()?), attr.unescape_value()?)?;
+                        // attrs.set_item(format!("@{}", attr.key.qn()?), attr.unescape_value()?)?;
+                        attrs.insert(
+                            "@".to_string() + &attr.key.qn()?,
+                            Value::Text(attr.unescape_value()?.parse()?),
+                        );
                     }
-                    value = Value::Dict(attrs);
+                    value = Value::Mapping(attrs);
                 }
-                _update_dict(py, d, &tag_name, &value.to_object(py))?;
+                update_mapping(&mut mapping, e.name().qn()?, value)?;
             }
             Ok(Event::Text(e)) => {
-                let text = e.unescape()?;
-                d.set_item("#text".to_string(), text)?;
+                let text = e.unescape()?.to_string();
+                mapping.insert("#text".to_string(), Value::Text(text));
             }
             Ok(Event::Start(e)) => {
-                let tag_name = e.name().qn()?;
-
-                let mut value = Value::Dict(PyDict::new(py));
+                let mut sub_xml_mapping = Value::Mapping(HashMap::new());
                 if e.attributes().count() > 0 {
                     for attr in e.attributes() {
                         let attr = attr?;
-                        match value {
-                            Value::Dict(d) => {
-                                d.set_item(format!("@{}", attr.key.qn()?), attr.unescape_value()?)?;
+                        if let Value::Mapping(m) = &mut sub_xml_mapping {
+                            m.insert(
+                                "@".to_string() + &attr.key.qn()?,
+                                Value::Text(attr.unescape_value()?.parse()?),
+                            );
+                        }
+                    }
+                }
+
+                if let Value::Mapping(m) = &mut sub_xml_mapping {
+                    m.extend(_parse(py, &(reader.read_text(e.name())?))?);
+                }
+
+                if let Value::Mapping(m) = &sub_xml_mapping {
+                    if m.len() == 1 {
+                        if let Some(text) = m.get("#text") {
+                            if let Value::Text(text) = text {
+                                sub_xml_mapping = Value::Text(text.clone());
                             }
-                            _ => unreachable!(),
                         }
                     }
                 }
 
-                match value {
-                    Value::Dict(d) => {
-                        d.update(_parse(py, &(reader.read_text(e.name())?))?.as_mapping())?;
-                    }
-                    _ => unreachable!(),
-                }
-
-                match value {
-                    Value::Dict(d) if d.len() == 1 => {
-                        if let Some(text) = d.get_item("#text")? {
-                            value = Value::Text(text.extract::<String>()?);
-                        }
-                    }
-                    _ => (),
-                }
-
-                _update_dict(py, d, &tag_name, &value.to_object(py))?;
+                update_mapping(&mut mapping, e.name().qn()?, sub_xml_mapping)?;
             }
             _ => (),
         }
     }
 
-    Ok(d)
+    Ok(mapping)
 }
 
 #[pyfunction]
 fn parse(py: Python, xml: &str) -> PyResult<PyObject> {
-    Ok(_parse(py, xml)?.into())
+    Ok(_parse(py, xml)?.to_object(py))
 }
 
 #[pymodule]
