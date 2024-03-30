@@ -100,6 +100,21 @@ def test_namespace_prefixed_attr(parse):
     assert parse(xml) == target
 
 
+def test_error_missing_closing_tag(parse):
+    with pytest.raises((RuntimeError, ExpatError)):
+        parse("<a>")
+
+
+def test_error_missing_opening_tag(parse):
+    with pytest.raises((RuntimeError, ExpatError)):
+        parse("</a>")
+
+
+def test_error_malformed_tag(parse):
+    with pytest.raises((RuntimeError, ExpatError)):
+        parse("<a")
+
+
 @pytest.fixture
 def data_dir():
     return Path(__file__).parent / "data"
@@ -119,16 +134,29 @@ def test_forecast(parse, forecast_xml, forecast_target):
     assert parse(forecast_xml) == forecast_target
 
 
-def test_error_missing_closing_tag(parse):
-    with pytest.raises((RuntimeError, ExpatError)):
-        parse("<a>")
+@pytest.fixture
+def simple_xml(data_dir):
+    return (data_dir / "simple.xml").read_text()
 
 
-def test_error_missing_opening_tag(parse):
-    with pytest.raises((RuntimeError, ExpatError)):
-        parse("</a>")
+@pytest.fixture
+def simple_target(data_dir):
+    return json.loads((data_dir / "simple.json").read_text())
 
 
-def test_error_malformed_tag(parse):
-    with pytest.raises((RuntimeError, ExpatError)):
-        parse("<a")
+def test_simple(parse, simple_xml, simple_target):
+    assert parse(simple_xml) == simple_target
+
+
+@pytest.fixture
+def time_series_xml(data_dir):
+    return (data_dir / "time-series.xml").read_text()
+
+
+@pytest.fixture
+def time_series_target(data_dir):
+    return json.loads((data_dir / "time-series.json").read_text())
+
+
+def test_time_series(parse, time_series_xml, time_series_target):
+    assert parse(time_series_xml) == time_series_target

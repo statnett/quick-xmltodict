@@ -121,6 +121,7 @@ convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/test*.py" = ["ANN001", "ANN201"]
+"benchmarking.py" = ["T201"]
 
 [tool.ruff.lint.flake8-import-conventions]
 [tool.ruff.lint.flake8-import-conventions.aliases]

@@ -65,6 +65,7 @@ poetry run pytest
 ```
 
 Be sure to run `poetry run maturin develop` after making changes to the Rust code.
+Add the `-r` flag for a release build (for example if you want to run benchmarks).
 
 It's recommended to install the pre-commit hooks:
 ```bash
