@@ -15,11 +15,14 @@ trait QNameExt {
 impl QNameExt for QName<'_> {
     /// Returns the qualified name of the element (prefix:local_name).
     fn qn(&self) -> Result<String> {
-        let mut name = std::str::from_utf8(self.local_name().as_ref())?.to_string();
-        if let Some(prefix) = self.prefix() {
-            name = format!("{}:{}", std::str::from_utf8(prefix.as_ref())?, name);
-        }
-        Ok(name)
+        Ok(match self.prefix() {
+            None => std::str::from_utf8(self.local_name().as_ref())?.to_string(),
+            Some(prefix) => {
+                std::str::from_utf8(prefix.as_ref())?.to_string()
+                    + ":"
+                    + std::str::from_utf8(self.local_name().as_ref())?
+            }
+        })
     }
 }
 
@@ -44,7 +47,7 @@ impl ToPyObject for Value {
     }
 }
 
-fn update_mapping(mapping: &mut HashMap<String, Value>, tag_name: String, value: Value) -> Result<()> {
+fn update_mapping(mapping: &mut JsonMapping, tag_name: String, value: Value) -> Result<()> {
     match mapping.entry(tag_name) {
         std::collections::hash_map::Entry::Vacant(e) => {
             e.insert(value);
@@ -60,10 +63,11 @@ fn update_mapping(mapping: &mut HashMap<String, Value>, tag_name: String, value:
             }
         },
     }
+
     Ok(())
 }
 
-fn _parse<'a>(py: Python<'a>, xml: &'a str) -> Result<JsonMapping> {
+fn _parse(xml: &str) -> Result<JsonMapping> {
     let mut reader = Reader::from_str(xml);
     reader.trim_text(true);
 
@@ -109,7 +113,7 @@ fn _parse<'a>(py: Python<'a>, xml: &'a str) -> Result<JsonMapping> {
                 }
 
                 if let Value::Mapping(m) = &mut sub_xml_mapping {
-                    m.extend(_parse(py, &(reader.read_text(e.name())?))?);
+                    m.extend(_parse(&(reader.read_text(e.name())?))?);
                 }
 
                 if let Value::Mapping(m) = &sub_xml_mapping {
@@ -133,10 +137,11 @@ fn _parse<'a>(py: Python<'a>, xml: &'a str) -> Result<JsonMapping> {
 
 #[pyfunction]
 fn parse(py: Python, xml: &str) -> PyResult<PyObject> {
-    Ok(_parse(py, xml)?.to_object(py))
+    Ok(_parse(xml)?.to_object(py))
 }
 
 #[pymodule]
+#[allow(deprecated)]
 fn quick_xmltodict(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(parse, m)?)?;
     Ok(())

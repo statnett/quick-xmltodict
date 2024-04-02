@@ -21,6 +21,24 @@ def test_empty_with_attributes(parse):
     assert parse(xml) == target
 
 
+def test_multiple_empty(parse):
+    xml = """
+        <root>
+            <a a_attr_1="a_value_1" />
+            <b/>
+            <c c_attr_1="c_value_1" c_attr_2="c_value_2" />
+        </root>
+    """
+    target = {
+        "root": {
+            "a": {"@a_attr_1": "a_value_1"},
+            "b": None,
+            "c": {"@c_attr_1": "c_value_1", "@c_attr_2": "c_value_2"},
+        },
+    }
+    assert parse(xml) == target
+
+
 def test_text(parse):
     xml = "<a>text</a>"
     target = {"a": "text"}
