@@ -55,7 +55,7 @@ fn update_mapping(mapping: &mut JsonMapping, tag_name: String, value: Value) -> 
         std::collections::hash_map::Entry::Occupied(mut e) => match e.get_mut() {
             Value::List(l) => l.push(value),
             _ => {
-                let old_value = std::mem::replace(e.get_mut(), Value::List(vec![]));
+                let old_value = std::mem::replace(e.get_mut(), Value::List(Vec::with_capacity(2)));
                 if let Value::List(l) = e.into_mut() {
                     l.push(old_value);
                     l.push(value);
@@ -71,7 +71,7 @@ pub fn _parse(xml: &str) -> Result<JsonMapping> {
     let mut reader = Reader::from_str(xml);
     reader.trim_text(true);
 
-    let mut mapping: JsonMapping = HashMap::new();
+    let mut mapping: JsonMapping = HashMap::with_capacity(1);
     loop {
         match reader.read_event() {
             Err(e) => return Err(e.into()),
@@ -81,10 +81,9 @@ pub fn _parse(xml: &str) -> Result<JsonMapping> {
                 if e.attributes().count() == 0 {
                     value = Value::None;
                 } else {
-                    let mut attrs: JsonMapping = HashMap::new();
+                    let mut attrs: JsonMapping = HashMap::with_capacity(e.attributes().count());
                     for attr in e.attributes() {
                         let attr = attr?;
-                        // attrs.set_item(format!("@{}", attr.key.qn()?), attr.unescape_value()?)?;
                         attrs.insert(
                             "@".to_string() + &attr.key.qn()?,
                             Value::Text(attr.unescape_value()?.parse()?),
@@ -99,7 +98,7 @@ pub fn _parse(xml: &str) -> Result<JsonMapping> {
                 mapping.insert("#text".to_string(), Value::Text(text));
             }
             Ok(Event::Start(e)) => {
-                let mut sub_xml_mapping = Value::Mapping(HashMap::new());
+                let mut sub_xml_mapping = Value::Mapping(HashMap::with_capacity(1));
                 if e.attributes().count() > 0 {
                     for attr in e.attributes() {
                         let attr = attr?;
