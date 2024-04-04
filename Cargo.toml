@@ -5,7 +5,7 @@ edition = "2021"
 
 [lib]
 name = "quick_xmltodict"
-crate-type = ["cdylib"]
+crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 anyhow = "*"
@@ -17,3 +17,6 @@ opt-level = 3
 strip = "symbols"
 codegen-units = 1
 lto = "fat"
+
+[features]
+default = ["pyo3/extension-module"]

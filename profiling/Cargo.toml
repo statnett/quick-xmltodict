@@ -1,0 +1,10 @@
+[package]
+name = "quick-xmltodict-profiler"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+quick-xmltodict = { path = "..", default-features = false }
+
+[profile.release]
+debug = true

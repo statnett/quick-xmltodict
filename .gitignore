@@ -1,4 +1,9 @@
-/target
+**/target
+
+# perf and flamegraph files
+perf.data
+perf.data.old
+flamegraph.svg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -52,10 +57,6 @@ coverage.xml
 
 # Rope
 .ropeproject
-
-# Django stuff:
-*.log
-*.pot
 
 .DS_Store
 

@@ -29,7 +29,7 @@ impl QNameExt for QName<'_> {
 type JsonMapping = HashMap<String, Value>;
 
 #[derive(Debug)]
-enum Value {
+pub enum Value {
     None,
     Text(String),
     Mapping(JsonMapping),
@@ -67,7 +67,7 @@ fn update_mapping(mapping: &mut JsonMapping, tag_name: String, value: Value) -> 
     Ok(())
 }
 
-fn _parse(xml: &str) -> Result<JsonMapping> {
+pub fn _parse(xml: &str) -> Result<JsonMapping> {
     let mut reader = Reader::from_str(xml);
     reader.trim_text(true);
 
