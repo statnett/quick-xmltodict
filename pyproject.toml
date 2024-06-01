@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quick-xmltodict"
-version = "0.1.1"
+version = "0.1.2"
 description = "Efficient XML-to-dict conversion backed by Rust"
 authors = ["Daniel Hjertholm <8713259+danhje@users.noreply.github.com>"]
 package-mode = false
@@ -8,7 +8,7 @@ package-mode = false
 [project]
 name = "quick-xmltodict"
 description = "Efficient XML-to-dict conversion backed by Rust"
-version = "0.1.1"
+version = "0.1.2"
 keywords = ["xmltodict", "xml-to-dict", "xml", "fast", "rust"]
 authors = [{name = "Daniel Hjertholm", email = "8713259+danhje@users.noreply.github.com"}]
 license = {file = "LICENSE"}
