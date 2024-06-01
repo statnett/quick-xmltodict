@@ -36,7 +36,7 @@ Efficient XML-to-dict conversion backed by Rust.
 
 ## Features
 
-`quick-xmltodict` is a Rust-backed XML-to-dict conversion package that is designed to be fast and efficient.
+`quick-xmltodict` is a Rust-backed XML-to-dict conversion package designed to be fast and efficient.
 It has a single function, `parse`, that takes an XML string and returns a Python dictionary.
 You should be able to use this function as a drop-in replacement for the `xmltodict.parse` function from the original `xmltodict` package (used without any extra arguments).
 Like `xmltodict`, `quick-xmltodict` follows [this](https://www.xml.com/pub/a/2006/05/31/converting-between-xml-and-json.html) schema for converting XML to JSON.
@@ -45,8 +45,8 @@ Like `xmltodict`, `quick-xmltodict` follows [this](https://www.xml.com/pub/a/200
 
 ## Performance
 
-`quick-xmltodict` is currently about 2-5 times faster than `xmltodict`.
-There are performance improvements to be made, so this difference is expected to increase.
+Since `xmltodict` uses the non-validating C-based [expat](https://docs.python.org/3/library/pyexpat.html) parser from Python's standard library, it is already very fast.
+`quick-xmltodict` is nonetheless about 2-5 times faster than `xmltodict`.
 
 ## Contributing
 
@@ -65,11 +65,11 @@ poetry run pytest
 ```
 
 Be sure to run `poetry run maturin develop` after making changes to the Rust code.
-Add the `-r` flag for a release build (for example if you want to run benchmarks).
+Add the `-r` flag for a release build (for example, if you want to run benchmarks).
 
 It's recommended to install the pre-commit hooks:
 ```bash
 poetry run pre-commit install
 ```
 
-This ensures that linting and formatting is run automatically on every commit.
+This ensures that linting and formatting are run automatically on every commit.
