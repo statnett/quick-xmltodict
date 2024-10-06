@@ -6,7 +6,7 @@
   "lockFileMaintenance": {
     "enabled": true,
     "automerge": true,
-    "automergeType": "pr"
+    "automergeType": "branch"
   },
   "pre-commit": {
     "enabled": true,
