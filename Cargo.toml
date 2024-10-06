@@ -10,7 +10,7 @@ crate-type = ["rlib", "cdylib"]
 [dependencies]
 anyhow = "*"
 pyo3 = { version = "*", features = ["anyhow"] }
-quick-xml = "0.31.0"
+quick-xml = "0.36.0"
 
 [profile.release]
 opt-level = 3
