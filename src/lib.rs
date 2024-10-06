@@ -140,8 +140,7 @@ fn parse(py: Python, xml: &str) -> PyResult<PyObject> {
 }
 
 #[pymodule]
-#[allow(deprecated)]
-fn quick_xmltodict(_py: Python, m: &PyModule) -> PyResult<()> {
+fn quick_xmltodict(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(parse, m)?)?;
     Ok(())
 }
