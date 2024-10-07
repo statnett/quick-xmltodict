@@ -3,6 +3,7 @@
   "extends": [
     "local>statnett/renovate-config"
   ],
+  "ignorePaths": ["profiling/Cargo.toml"],
   "lockFileMaintenance": {
     "enabled": true,
     "automerge": true,
