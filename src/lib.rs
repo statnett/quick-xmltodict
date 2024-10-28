@@ -74,7 +74,7 @@ fn update_mapping(mapping: &mut JsonMapping, tag_name: String, value: Value) -> 
 
 pub fn _parse(xml: &str) -> Result<JsonMapping> {
     let mut reader = Reader::from_str(xml);
-    reader.trim_text(true);
+    reader.config_mut().trim_text(true);
 
     let mut mapping: JsonMapping = HashMap::with_capacity(1);
     loop {
