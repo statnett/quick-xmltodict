@@ -23,6 +23,7 @@ repos:
     rev: v1.1.1
     hooks:
       - id: fmt
+        types: [rust]
       - id: cargo-check
       - id: clippy
         args: [--fix, --allow-dirty, --allow-staged]
