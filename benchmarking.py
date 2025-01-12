@@ -3,7 +3,7 @@
 Important! Remember to build the Rust extension with the -r flag to enable release mode.
 Without this, the Rust extension will be compiled in debug mode, which is significantly slower.
 
-poetry run maturin develop -r
+uv run maturin develop -r
 """
 
 import timeit
@@ -22,7 +22,7 @@ DATA = {
 }
 
 results = {}
-for name, xml in DATA.items():  # noqa: B007, PERF102
+for name in DATA:
     print(f"Running benchmarks for {name}...")
     quick_time = timeit.timeit("quickparse(xml)", globals=globals(), number=3)
     py_time = timeit.timeit("pyparse(xml)", globals=globals(), number=3)

@@ -54,22 +54,22 @@ PRs are very welcome! Please make sure to run the tests before submitting a PR.
 
 ## Development
 
-This project uses [Poetry](https://python-poetry.org/) to manage the environment and Python dependencies,
+This project uses [uv](https://docs.astral.sh/uv/) to manage the environment and Python dependencies,
 so you'll need to have it installed in addition to Python and Rust.
 
 To install the development environment and run the test suite:
 ```bash
-poetry install
-poetry run maturin develop
-poetry run pytest
+uv sync
+uv run maturin develop
+uv run pytest
 ```
 
-Be sure to run `poetry run maturin develop` after making changes to the Rust code.
+Be sure to run `uv run maturin develop --uv` after making changes to the Rust code.
 Add the `-r` flag for a release build (for example, if you want to run benchmarks).
 
 It's recommended to install the pre-commit hooks:
 ```bash
-poetry run pre-commit install
+uv run pre-commit install
 ```
 
 This ensures that linting and formatting are run automatically on every commit.
