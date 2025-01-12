@@ -26,7 +26,7 @@ cargo install flamegraph
 
 And run with:
 ```bash
-poetry run cargo flamegraph --bin main
+uv run cargo flamegraph --bin main
 ```
 
 This will generate a `flamegraph.svg` file, which can be opened in a browser to visualize the performance of the code.
