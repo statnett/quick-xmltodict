@@ -3,7 +3,7 @@
 Important! Remember to build the Rust extension with the -r flag to enable release mode.
 Without this, the Rust extension will be compiled in debug mode, which is significantly slower.
 
-uv run maturin develop -r
+uv run maturin develop --uv -r
 """
 
 import timeit

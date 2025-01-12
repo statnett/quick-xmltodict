@@ -60,7 +60,7 @@ so you'll need to have it installed in addition to Python and Rust.
 To install the development environment and run the test suite:
 ```bash
 uv sync
-uv run maturin develop
+uv run maturin develop --uv
 uv run pytest
 ```
 
