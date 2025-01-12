@@ -22,7 +22,7 @@ DATA = {
 }
 
 results = {}
-for name in DATA:
+for name, xml in DATA.items():  # noqa: B007, PERF102
     print(f"Running benchmarks for {name}...")
     quick_time = timeit.timeit("quickparse(xml)", globals=globals(), number=3)
     py_time = timeit.timeit("pyparse(xml)", globals=globals(), number=3)
