@@ -1,7 +1,6 @@
 [project]
 name = "quick-xmltodict"
 description = "Efficient XML-to-dict conversion backed by Rust"
-version = "0.1.2"
 authors = [{name = "Daniel Hjertholm", email = "8713259+danhje@users.noreply.github.com"}]
 readme = "README.md"
 license = "MIT"
@@ -18,6 +17,7 @@ classifiers = [
     "Topic :: Text Processing :: Markup :: XML",
 ]
 dependencies = []
+dynamic = ["version"] # Source version from Cargo.toml's package.version
 
 [project.urls]
 Repository = "https://github.com/statnett/quick-xmltodict"
