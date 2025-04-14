@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.10"
 
 [[package]]
@@ -202,7 +203,6 @@ wheels = [
 
 [[package]]
 name = "quick-xmltodict"
-version = "0.1.2"
 source = { editable = "." }
 
 [package.dev-dependencies]
