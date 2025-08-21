@@ -1,6 +1,6 @@
 use anyhow::Result;
 use pyo3::prelude::*;
-use pyo3::types::PyNone;
+use pyo3::types::{PyBytes, PyNone, PyString};
 
 use quick_xml::name::QName;
 
@@ -134,9 +134,16 @@ pub fn _parse(xml: &str) -> Result<JsonMapping> {
     Ok(mapping)
 }
 
-#[pyfunction]
-fn parse(py: Python, xml: &str) -> PyResult<PyObject> {
-    Ok(_parse(xml)?.to_object(py))
+#[pyfunction(signature = (xml), text_signature = "(xml: str | bytes)")]
+fn parse(py: Python<'_>, xml: &Bound<'_, PyAny>) -> PyResult<PyObject> {
+    let xml_str: &str = if let Ok(s) = xml.downcast::<PyString>() {
+        s.to_str()?
+    } else if let Ok(b) = xml.downcast::<PyBytes>() {
+        std::str::from_utf8(b.as_bytes())?
+    } else {
+        return Err(pyo3::exceptions::PyTypeError::new_err("Expected str or UTF-8 bytes"));
+    };
+    Ok(_parse(xml_str)?.to_object(py))
 }
 
 #[pymodule]

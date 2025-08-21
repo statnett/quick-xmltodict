@@ -178,3 +178,9 @@ def time_series_target(data_dir):
 
 def test_time_series(parse, time_series_xml, time_series_target):
     assert parse(time_series_xml) == time_series_target
+
+
+def test_bytes(parse):
+    xml = b"<a>text</a>"
+    target = {"a": "text"}
+    assert parse(xml) == target
