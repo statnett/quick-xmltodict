@@ -21,6 +21,13 @@ DATA = {
     "eic_codes": (DATA_DIR / "eic-codes.xml").read_text(),
 }
 
+DATA_BYTES = {
+    "simple": (DATA_DIR / "simple.xml").read_bytes(),
+    "time_series": (DATA_DIR / "time-series.xml").read_bytes(),
+    "forecast": (DATA_DIR / "forecast.xml").read_bytes(),
+    "eic_codes": (DATA_DIR / "eic-codes.xml").read_bytes(),
+}
+
 results = {}
 for name, xml in DATA.items():  # noqa: B007, PERF102
     print(f"Running benchmarks for {name}...")
@@ -28,6 +35,20 @@ for name, xml in DATA.items():  # noqa: B007, PERF102
     py_time = timeit.timeit("pyparse(xml)", globals=globals(), number=3)
     results[name] = {"quick_xmltodict": quick_time, "xmltodict": py_time, "ratio": py_time / quick_time}
 
-print("Relative performance:")
+print("Relative performance of quick-xmltodict vs xmltodict:")
+for name, result in results.items():
+    print(f"{name}: {result['ratio']:.2f}")
+
+results = {}
+for name, xml in DATA_BYTES.items():  # noqa: B007, PERF102
+    quick_time = timeit.timeit("quickparse(xml)", globals=globals(), number=10)
+    conv_time = timeit.timeit("quickparse(xml.decode())", globals=globals(), number=10)
+    results[name] = {
+        "quick_xmltodict": quick_time,
+        "quick_xmltodict_with_decode": py_time,
+        "ratio": conv_time / quick_time,
+    }
+
+print("Relative performance of UTF-8 validation in Rust vs decode() overhead in Python:")
 for name, result in results.items():
     print(f"{name}: {result['ratio']:.2f}")
