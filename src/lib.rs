@@ -1,9 +1,10 @@
 use anyhow::Result;
-use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyNone, PyString};
+use pyo3::{prelude::*, IntoPyObjectExt};
 
 use quick_xml::name::QName;
 
+use pyo3::exceptions::PyUnicodeDecodeError;
 use quick_xml::events::Event;
 use quick_xml::Reader;
 use std::collections::HashMap;
@@ -36,13 +37,17 @@ pub enum Value {
     List(Vec<Value>),
 }
 
-impl ToPyObject for Value {
-    fn to_object(&self, py: Python) -> PyObject {
+impl<'py> IntoPyObject<'py> for &Value {
+    type Target = pyo3::types::PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            Value::None => PyNone::get_bound(py).to_object(py),
-            Value::Text(s) => s.to_object(py),
-            Value::Mapping(m) => m.to_object(py),
-            Value::List(l) => l.to_object(py),
+            Value::None => Ok(PyNone::get(py).to_owned().into_any()),
+            Value::Text(s) => Ok(s.into_pyobject(py)?.into_any()),
+            Value::Mapping(m) => Ok(m.into_pyobject(py)?.into_any()),
+            Value::List(l) => Ok(l.into_pyobject(py)?.into_any()),
         }
     }
 }
@@ -130,20 +135,20 @@ pub fn _parse(xml: &str) -> Result<JsonMapping> {
             _ => (),
         }
     }
-
     Ok(mapping)
 }
 
 #[pyfunction(signature = (xml), text_signature = "(xml: str | bytes)")]
-fn parse(py: Python<'_>, xml: &Bound<'_, PyAny>) -> PyResult<PyObject> {
-    let xml_str: &str = if let Ok(s) = xml.downcast::<PyString>() {
+fn parse(py: Python<'_>, xml: &Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
+    let xml_str: &str = if let Ok(s) = xml.cast::<PyString>() {
         s.to_str()?
-    } else if let Ok(b) = xml.downcast::<PyBytes>() {
-        std::str::from_utf8(b.as_bytes())?
+    } else if let Ok(b) = xml.cast::<PyBytes>() {
+        let bytes = b.as_bytes();
+        std::str::from_utf8(bytes).map_err(|e| PyUnicodeDecodeError::new_err_from_utf8(py, bytes, e))?
     } else {
         return Err(pyo3::exceptions::PyTypeError::new_err("Expected str or UTF-8 bytes"));
     };
-    Ok(_parse(xml_str)?.to_object(py))
+    _parse(xml_str)?.into_py_any(py)
 }
 
 #[pymodule]
