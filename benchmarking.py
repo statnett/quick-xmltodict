@@ -9,8 +9,9 @@ uv run maturin develop --uv -r
 import timeit
 from pathlib import Path
 
-from quick_xmltodict import parse as quickparse  # noqa: F401
 from xmltodict import parse as pyparse  # noqa: F401
+
+from quick_xmltodict import parse as quickparse  # noqa: F401
 
 DATA_DIR = Path(__file__).parent / "tests/data"
 

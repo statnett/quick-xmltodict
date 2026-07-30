@@ -3,8 +3,9 @@ from pathlib import Path
 from xml.parsers.expat import ExpatError
 
 import pytest
-from quick_xmltodict import parse as rustparse
 from xmltodict import parse as pyparse
+
+from quick_xmltodict import parse as rustparse
 
 pytestmark = pytest.mark.parametrize("parse", [pyparse, rustparse])
 
