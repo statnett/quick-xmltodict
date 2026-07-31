@@ -99,7 +99,7 @@ pub fn _parse(xml: &str) -> Result<JsonMapping> {
                 update_mapping(&mut mapping, e.name().qn()?, value)?;
             }
             Ok(Event::Text(e)) => {
-                let text = e.unescape()?.to_string();
+                let text = e.decode()?.to_string();
                 mapping.insert("#text".to_string(), Value::Text(text));
             }
             Ok(Event::Start(e)) => {
