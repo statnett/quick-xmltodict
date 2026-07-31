@@ -2,11 +2,12 @@ use anyhow::Result;
 use pyo3::types::{PyBytes, PyNone, PyString};
 use pyo3::{prelude::*, IntoPyObjectExt};
 
-use quick_xml::name::QName;
-
 use pyo3::exceptions::PyUnicodeDecodeError;
 use quick_xml::events::Event;
+use quick_xml::name::QName;
+
 use quick_xml::Reader;
+use quick_xml::XmlVersion;
 use std::collections::HashMap;
 
 trait QNameExt {
@@ -72,14 +73,15 @@ fn update_mapping(mapping: &mut JsonMapping, tag_name: String, value: Value) -> 
     Ok(())
 }
 
-pub fn _parse(xml: &str) -> Result<JsonMapping> {
-    let mut reader = Reader::from_str(xml);
-    reader.config_mut().trim_text(true);
-
+pub fn _parse(reader: &mut Reader<&[u8]>, mut version: XmlVersion) -> Result<JsonMapping> {
     let mut mapping: JsonMapping = HashMap::with_capacity(1);
+    reader.config_mut().trim_text(true);
     loop {
         match reader.read_event() {
             Err(e) => return Err(e.into()),
+            Ok(Event::Decl(decl)) => {
+                version = decl.xml_version()?;
+            }
             Ok(Event::Eof) => break,
             Ok(Event::Empty(e)) => {
                 let value: Value;
@@ -91,7 +93,7 @@ pub fn _parse(xml: &str) -> Result<JsonMapping> {
                         let attr = attr?;
                         attrs.insert(
                             "@".to_string() + &attr.key.qn()?,
-                            Value::Text(attr.unescape_value()?.parse()?),
+                            Value::Text(attr.normalized_value(version)?.parse()?),
                         );
                     }
                     value = Value::Mapping(attrs);
@@ -110,14 +112,16 @@ pub fn _parse(xml: &str) -> Result<JsonMapping> {
                         if let Value::Mapping(m) = &mut sub_xml_mapping {
                             m.insert(
                                 "@".to_string() + &attr.key.qn()?,
-                                Value::Text(attr.unescape_value()?.parse()?),
+                                Value::Text(attr.normalized_value(version)?.parse()?),
                             );
                         }
                     }
                 }
 
                 if let Value::Mapping(m) = &mut sub_xml_mapping {
-                    m.extend(_parse(&(reader.read_text(e.name())?))?);
+                    let text = reader.read_text(e.name())?;
+                    let mut sub_reader = Reader::from_reader(text.as_ref());
+                    m.extend(_parse(&mut sub_reader, version)?);
                 }
 
                 if let Value::Mapping(m) = &sub_xml_mapping {
@@ -148,7 +152,8 @@ fn parse(py: Python<'_>, xml: &Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
     } else {
         return Err(pyo3::exceptions::PyTypeError::new_err("Expected str or UTF-8 bytes"));
     };
-    _parse(xml_str)?.into_py_any(py)
+    let mut reader = Reader::from_str(xml_str);
+    _parse(&mut reader, XmlVersion::Implicit1_0)?.into_py_any(py)
 }
 
 #[pymodule]
