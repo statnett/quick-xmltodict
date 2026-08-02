@@ -27,3 +27,8 @@ repos:
       - id: cargo-check
       - id: clippy
         args: [--fix, --allow-dirty, --allow-staged]
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.29.0
+    hooks:
+      - id: zizmor
+        args: [--no-progress, --fix=all]
