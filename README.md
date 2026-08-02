@@ -60,16 +60,16 @@ so you'll need to have it installed in addition to Python and Rust.
 To install the development environment and run the test suite:
 ```bash
 uv sync
-uv run maturin develop --uv
+uvx maturin develop --uv
 uv run pytest
 ```
 
-Be sure to run `uv run maturin develop --uv` after making changes to the Rust code.
+Be sure to run `uvx maturin develop --uv` after making changes to the Rust code.
 Add the `-r` flag for a release build (for example, if you want to run benchmarks).
 
 It's recommended to install the pre-commit hooks:
 ```bash
-uv run pre-commit install
+uvx pre-commit install
 ```
 
 This ensures that linting and formatting are run automatically on every commit.
