@@ -1,0 +1,26 @@
+---
+name: TOML Validation
+
+on:
+  push:
+    paths:
+      - "**.toml"
+  pull_request:
+    paths:
+      - "**.toml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: tombi-toml/setup-tombi@v1.2.5
+      - name: Validate TOML files
+        run: tombi lint
+      - name: Check TOML formatting
+        run: tombi format --check

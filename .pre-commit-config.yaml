@@ -32,3 +32,9 @@ repos:
     hooks:
       - id: zizmor
         args: [--no-progress, --fix=all]
+  - repo: https://github.com/tombi-toml/tombi-pre-commit
+    rev: v1.2.5
+    hooks:
+      - id: tombi-format
+        exclude: ".*\\.lock"
+      - id: tombi-lint

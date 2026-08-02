@@ -1,36 +1,42 @@
 [project]
 name = "quick-xmltodict"
 description = "Efficient XML-to-dict conversion backed by Rust"
-authors = [{name = "Daniel Hjertholm", email = "8713259+danhje@users.noreply.github.com"}]
 readme = "README.md"
-license = "MIT"
-keywords = ["xmltodict", "xml-to-dict", "xml", "fast", "rust"]
 requires-python = ">=3.10"
+license = "MIT"
+authors = [
+  { name = "Daniel Hjertholm", email = "8713259+danhje@users.noreply.github.com" }
+]
+keywords = ["fast", "rust", "xml", "xml-to-dict", "xmltodict"]
 classifiers = [
-    "Intended Audience :: Developers",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Rust",
-    "Topic :: Text Processing :: Markup :: XML",
-    "Typing :: Typed",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+  "Programming Language :: Rust",
+  "Topic :: Text Processing :: Markup :: XML",
+  "Typing :: Typed",
 ]
 dependencies = []
-dynamic = ["version"] # Source version from Cargo.toml's package.version
+dynamic = ["version"]  # Source version from Cargo.toml's package.version
 
 [project.urls]
 Repository = "https://github.com/statnett/quick-xmltodict"
 
 [dependency-groups]
 dev = [
-    "maturin>=1.8.1",
-    "pre-commit>=4.0.1",
-    "pytest>=8.3.4",
-    "ruff>=0.9.1",
-    "xmltodict>=0.14.2",
+  "maturin>=1.8.1",
+  "pre-commit>=4.0.1",
+  "pytest>=8.3.4",
+  "ruff>=0.9.1",
+  "xmltodict>=0.14.2",
 ]
+
+[build-system]
+requires = ["maturin>=1.8,<2.0"]
+build-backend = "maturin"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
@@ -41,7 +47,3 @@ line-length = 120
 [tool.ruff.lint]
 extend-select = ["I", "RUF", "UP", "B", "PERF"]
 fixable = ["ALL"]
-
-[build-system]
-requires = ["maturin>=1.8,<2.0"]
-build-backend = "maturin"
