@@ -46,7 +46,7 @@ for name, xml in DATA_BYTES.items():  # noqa: B007, PERF102
     conv_time = timeit.timeit("quickparse(xml.decode())", globals=globals(), number=10)
     results[name] = {
         "quick_xmltodict": quick_time,
-        "quick_xmltodict_with_decode": py_time,
+        "quick_xmltodict_with_decode": conv_time,
         "ratio": conv_time / quick_time,
     }
 
